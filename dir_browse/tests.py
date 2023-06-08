@@ -1,9 +1,10 @@
 from django.db import DatabaseError
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import auth
 from .models import *
 from .forms import *
+from .views import getDataOrNothing
 
 user_test_name = 'testuser'
 user_test_password = '12345'
@@ -13,6 +14,15 @@ def standard_setup():
     standard = Standard.objects.create(name="c89")
     processor = Processor.objects.create(name="STM8")
     CompilationSettings.objects.create(standard = standard, processor = processor)
+
+def sophisticated_setup():
+    standard = Standard.objects.create(name="c89")
+    processor = Processor.objects.create(name="STM8")
+    CompilationSettings.objects.create(standard = standard, processor = processor)
+    dependant = DependantOption.objects.create(name="--model-medium", processor = processor, active = False)
+    dependant = DependantOption.objects.create(name="--model-small", processor = processor, active = False)
+    optimization = Optimization.objects.create(name="--allow-unsafe-read", active = False)
+    optimization = Optimization.objects.create(name="--allow-unsafe-write", active = False)
 
 def register_and_login(self):
     self.user = User.objects.create_user(username=user_test_name, password=user_test_password)
@@ -61,10 +71,10 @@ class LoginViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_bad_login(self):
-        login(self)
         user = auth.get_user(self.client)
+        data = {"name": "TestName"}
+        self.client.post(reverse('dir_browse:login'), data)
         self.assertFalse(user.is_authenticated)
-
 
 class IndexViewTests(TestCase):
     def setUp(self):
@@ -87,11 +97,123 @@ class IndexViewTests(TestCase):
         dir = Directory.objects.get(id = dir.pk)
         self.assertFalse(dir.alive)
 
+    def test_processor_existent(self):
+        self.client.post(reverse('dir_browse:choose_processor'), {"processor": "1"})
+        settings = CompilationSettings.objects.order_by("id")[0]
+        self.assertTrue(settings.processor == Processor.objects.get(pk=1))
+
+    def test_processor_nonexistent(self):
+        self.client.post(reverse('dir_browse:choose_processor'), {"processor": "1"})
+        self.client.post(reverse('dir_browse:choose_processor'), {"processor": "2"})
+        settings = CompilationSettings.objects.order_by("id")[0]
+        self.assertTrue(settings.processor == Processor.objects.get(pk=1))
+
+    def test_standard_existent(self):
+        self.client.post(reverse('dir_browse:choose_standard'), {"standard": "1"})
+        settings = CompilationSettings.objects.order_by("id")[0]
+        self.assertTrue(settings.standard == Standard.objects.get(pk=1))
+
+    def test_standard_nonexistent(self):
+        self.client.post(reverse('dir_browse:choose_standard'), {"standard": "1"})
+        self.client.post(reverse('dir_browse:choose_standard'), {"standard": "2"})
+        settings = CompilationSettings.objects.order_by("id")[0]
+        self.assertTrue(settings.standard == Standard.objects.get(pk=1))
+
+class IndexViewSophisticatedTests(TestCase):
+    def setUp(self):
+        sophisticated_setup()
+
+    def test_optimization_nonexistent(self):
+        data = {"options": ["opt2"]}
+        self.client.post(reverse('dir_browse:choose_optimizations'), data)
+        self.assertFalse(Optimization.objects.get(pk=1).active)
+
+    def test_optimization_existent(self):
+        data = {"options": ["--allow-unsafe-read"]}
+        self.client.post(reverse('dir_browse:choose_optimizations'), data)
+        self.assertTrue(Optimization.objects.get(pk=1).active)
+        self.assertFalse(Optimization.objects.get(pk=2).active)
+
+    def test_dependant_nonexistent(self):
+        data = {"options": ["--model-large"]}
+        self.client.post(reverse('dir_browse:choose_dependant'), data)
+        self.assertFalse(DependantOption.objects.get(pk=1).active)
+
+    def test_dependant_existent(self):
+        data = {"options": ["--model-medium"]}
+        self.client.post(reverse('dir_browse:choose_dependant'), data)
+        self.assertTrue(DependantOption.objects.get(pk=1).active)
+
+    def test_add_file(self):
+        register_and_login(self)
+        data = {"name": "TestFile"}
+        self.client.post(reverse('dir_browse:add_file', kwargs={'pk':0}), data)
+        self.assertTrue(File.objects.all().count() == 1)
+    
+    def test_add_file_to_directory(self):
+        register_and_login(self)
+        dir = Directory.objects.create(name="TestDirectory", owner = self.user)
+        data = {"name": "TestFile"}
+        self.client.post(reverse('dir_browse:add_file', kwargs={'pk':dir.id}), data)
+        self.assertTrue(File.objects.all().count() == 1)
+        file = File.objects.get(pk=1)
+        self.assertTrue(file.parent_id == 1)
+
+    def test_add_directory_to_directory(self):
+        register_and_login(self)
+        dir = Directory.objects.create(name="TestDirectory", owner = self.user)
+        data = {"name": "TestDirectory2"}
+        self.client.post(reverse('dir_browse:add_dir', kwargs={'pk':dir.id}), data)
+        self.assertTrue(Directory.objects.all().count() == 2)
+        dir = Directory.objects.get(pk=2)
+        self.assertTrue(dir.parent_id == 1)
+
+    def test_modify_file(self):
+        register_and_login(self)
+        file = File.objects.create(name="TestFile", owner = self.user)
+        self.assertTrue(File.objects.all().count() == 1)
+        data = {"text": "NewText"}
+        self.client.post(reverse('dir_browse:file_detail', kwargs={'pk':1}), data)
+        self.assertEqual(File.objects.get(pk=1).text, "NewText")
+
+    def test_add_dir(self):
+        register_and_login(self)
+        data = {"name": "TestDir"}
+        self.client.post(reverse('dir_browse:add_dir', kwargs={'pk':0}), data)
+        self.assertTrue(Directory.objects.all().count() == 1)
+
     def test_compile(self):
         register_and_login(self)
         file = create_file(self,"test_name", "test_desc","int main() {return 0;}")
         response = self.client.get(reverse('dir_browse:compile',kwargs={'pk':file.pk}))
         self.assertTrue(file.alive)
+
+    def test_compile_with_options(self):
+        data = {"options": ["--model-medium"]}
+        self.client.post(reverse('dir_browse:choose_dependant'), data)
+        data = {"options": ["--allow-unsafe-read"]}
+        self.client.post(reverse('dir_browse:choose_optimizations'), data)
+        register_and_login(self)
+        file = create_file(self,"test_name", "test_desc","int main() {return 0;}")
+        response = self.client.get(reverse('dir_browse:compile',kwargs={'pk':file.pk}))
+        self.assertTrue(file.alive)
+
+    def test_user_no_access_to_others_file_and_directory(self):
+        register_and_login(self)
+        file = File.objects.create(name="TestFile", owner = self.user)
+        dir = Directory.objects.create(name="TestDirectory", owner = self.user)
+        logout(self)
+        self.user = User.objects.create_user(username=user_test_name+"2", password=user_test_password)
+        self.client.login(username=user_test_name+"2", password=user_test_password)
+        response = self.client.get(reverse('dir_browse:dir_detail',kwargs={'pk':dir.pk}))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse('dir_browse:file_detail',kwargs={'pk':file.pk}))
+        self.assertEqual(response.status_code, 404)
+    
+    def test_open(self):
+        data = getDataOrNothing("New file")
+        self.assertTrue(len(data) > 0)
+
 
 class FileDetailViewTests(TestCase):
     def setUp(self):

@@ -178,10 +178,9 @@ def choose_optimizations(request):
         for c in optimizations:
             if c.name in selected:
                 c.active = True
-                c.save()
             else:
                 c.active = False
-                c.save()
+            c.save()
     return redirect(request.META.get('HTTP_REFERER', '/dir_browse/'))
 
 
@@ -193,10 +192,9 @@ def choose_dependant(request):
         for c in dependant:
             if c.name in selected and c.processor == CompilationSettings.objects.order_by("id")[0].processor:
                 c.active = True
-                c.save()
             else:
                 c.active = False
-                c.save()
+            c.save()
     return redirect(request.META.get('HTTP_REFERER', '/dir_browse/'))
 
 

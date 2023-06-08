@@ -1,0 +1,87 @@
+{% extends 'dir_browse/base.html' %}
+{% block left %}
+<a class="directories-menu-button" onClick="openCodeTab(event, 'cell-code-tab2')">+{% load static %}
+    <img src="{% static 'dir_browse/images/directory.png' %}" alt="directory icon">
+</a>
+<a class="directories-menu-button" href={% url 'dir_browse:delete_dir' pk %}>-{% load static %}
+    <img src="{% static 'dir_browse/images/directory.png' %}" alt="directory icon">
+</a>
+<a class="directories-menu-button" onClick="openCodeTab(event, 'cell-code-tab3')">+{% load static %}
+    <img src="{% static 'dir_browse/images/file.png' %}" alt="file icon">
+</a>
+{% endblock %}
+{% block centre %}
+
+<div class="cell-code" id="cell-code-tab1">
+    <ul>
+        <li>
+            <label>Nazwa:</label>
+            <label>{{directory.name}}</label>
+        </li>
+        {% if directory.desc %}
+        <li>
+            <label>Opis:</label>
+            <label>{{directory.desc}}</label>
+        </li>
+        {% endif %}
+        <li>
+            <label>Data utworzenia:</label>
+            <label>{{directory.creation_date}}</label>
+        </li>
+    </ul>
+</div>
+
+<div class="cell-code" id="cell-code-tab2">
+    <div class="return-button" onClick="openCodeTab(event, 'cell-code-tab1')">X</div>
+    <h3>Dodaj folder:</h3>
+    <form action={% url 'dir_browse:add_dir' pk %} method="post">
+        {% csrf_token %}
+        {{add_dir_form.as_p}}
+        <input type="submit" value="Zatwierdź">
+    </form>
+</div>
+
+<div class="cell-code" id="cell-code-tab3">
+    <div class="return-button" onClick="openCodeTab(event, 'cell-code-tab1')">X</div>
+    <h3>Dodaj plik:</h3>
+    <form action={% url 'dir_browse:add_file' pk %} method="post">
+        {% csrf_token %}
+        {{add_file_form.as_p}}
+        <input type="submit" value="Zatwierdź">
+    </form>
+</div>
+<script type="text/javascript">
+    function openCodeTab(evt, tabId) {
+        var i, tabcontent, tablinks;
+
+        tabcontent = document.getElementsByClassName("cell-code");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        document.getElementById(tabId).style.display = "block";
+    }
+
+    /* version without page reloading after adding a directory; it works, but the added directory isn't show on the list until refresh*/
+    // document.getElementById("add-dir").addEventListener("submit", function (e) {
+    //     e.preventDefault();
+
+    //     name = document.getElementById("id_name").value;
+    //     desc = document.getElementById("id_desc").value;
+
+    //     const formData = new FormData();
+    //     formData.append("name", name);
+    //     formData.append("desc", desc);
+    //     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    //     console.log(formData);
+    //     fetch('{% url "dir_browse:dir_detail" pk %}', {
+    //         method: 'POST',
+    //         body: formData
+    //     })
+    //     openCodeTab(undefined, "cell-code-tab1");
+    // });
+
+    openCodeTab(undefined, "cell-code-tab1");
+
+</script>
+{% endblock %}

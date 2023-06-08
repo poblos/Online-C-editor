@@ -1,0 +1,41 @@
+{% extends 'dir_browse/base.html' %}
+{% block left %}
+<a class="directories-menu-button" id="delete-button" href={% url 'dir_browse:delete_file' pk %}>-{% load static %}
+    <img src={% static 'dir_browse/images/file.png' %} alt="file icon">
+</a>
+{% endblock %}
+{% block centre %}
+<div class="cell-code">
+    <form action={% url 'dir_browse:file_detail' pk %} id="formdata" method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value="Zapisz zmiany">
+    </form>
+    <form action={% url 'dir_browse:compile' pk %} method="post">
+        {% csrf_token %}
+        <input type="submit" value="Kompiluj">
+    </form>
+</div>
+
+<script type="text/javascript">
+    document.getElementById("formdata").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        text = document.getElementById("id_text").value;
+
+        const formData = new FormData();
+        formData.append('text', text);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        console.log(formData);
+        fetch('{% url "dir_browse:file_detail" pk %}', {
+            method: 'POST',
+            body: formData
+        })
+    });
+
+</script>
+{% endblock %}
+
+{% block right %}
+<div class="right-bar-text-field">{{asm}}</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pl-PL">
+
+<head>
+    <title>ProjectScheme</title>
+    {% load static %}
+    <link rel="stylesheet" href={% static 'dir_browse/schemeStyle.css' %}>
+    <meta charset=" UTF-8">
+</head>
+
+<body>
+    <noscript>Your browser does not support JavaScript!</noscript>
+    <div class="wrapper">
+        <div class="cell-top">
+            <input class="hamburger-checkbox" type="checkbox" id="hamburger-checkbox">
+            <label class="hamburger-image" for="hamburger-checkbox">
+                {% load static %}
+                <img src={% static 'dir_browse/images/hamburger.png' %} alt="hamburger menu">
+            </label>
+            <nav class="bar">
+                <ul class="bar-list">
+                    <li>Plik</li>
+                    <li>Edycja</li>
+                    <li>Opcje</li>
+                    {% if request.user.is_authenticated %}
+                    <li><a class="top-cell-link" href="{% url 'dir_browse:logout' %}">Logout</a></li>
+                    {% else %}
+                    <li><a class="top-cell-link" href="{% url 'dir_browse:login' %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <div class="cell-directories">
+            <div class="directories-menu">
+                {% block left %}
+                {% endblock %}
+            </div>
+            <div class="directory">
+                <img src={% static 'dir_browse/images/directory.png' %} alt="directory icon">
+                <a class="directories-menu-link" href="{% url 'dir_browse:index'%}">root</a>
+            </div>
+            {% if directory_list %}
+            <ul class="directory">
+                {% for directory in directory_list %}
+                {% if directory == 'in' %}
+                <ul class="directory">
+                    {% elif directory == 'out' %}
+                </ul>
+                {% else %}
+                {% if directory.is_a_file == False %}
+                {% load static %}
+                <li>
+                    <img src={% static 'dir_browse/images/directory.png' %} alt="directory icon">
+                    <a class="directories-menu-link" href={% url 'dir_browse:dir_detail' directory.id %}>{{directory.name }}</a>
+                </li>
+                {% else %}
+                <li>
+                    <img src={% static 'dir_browse/images/file.png' %} alt="directory icon">
+                    <a class="directories-menu-link" href={% url 'dir_browse:file_detail' directory.id %}>{{directory.name }}</a>
+                </li>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No directories are available.</p>
+            {% endif %}
+        </div>
+
+        {% block centre %}
+        {% endblock %}
+
+        <div class="cell-right">
+            {% block right %}
+            {% endblock %}
+        </div>
+        {% block down %}
+        <div class="cell-tab">
+            <div class="tab" id="defaultOpen" onclick="openTab(event, 'tab1')">STANDARD</div>
+            <div class="tab" onclick="openTab(event, 'tab2')">OPTYMALIZACJE</div>
+            <div class="tab" onclick="openTab(event, 'tab3')">PROCESOR</div>
+            <div class="tab" onclick="openTab(event, 'tab4')">ZALEŻNE</div>
+            <div class="tab-list">
+                <select>
+                    <option>Język</option>
+                    <option>Kompilator</option>
+                </select>
+            </div>
+        </div>
+        <div class="cell-tab-data" id="tab1">
+            <form action={% url 'dir_browse:choose_standard' %} method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <p>Wybierz standard języka:</p>
+                    {% for standard in standard_list %}
+                    {% if settings.standard == standard %}
+                    <input type="radio" name="standard" id="standard{{ forloop.counter }}" value="{{ standard.id }}"
+                        checked="checked">
+                    {%else %}
+                    <input type="radio" name="standard" id="standard{{ forloop.counter }}" value="{{ standard.id }}">
+                    {%endif%}
+                    <label for="standard{{ forloop.counter }}">{{ standard.name }}</label><br>
+                    {% endfor %}
+                </fieldset>
+                <input type="submit" value="Zapisz standard">
+            </form>
+        </div>
+        <div class="cell-tab-data" id="tab2">
+            <form action={% url 'dir_browse:choose_optimizations' %} method="post">
+                <p>Wybierz optymalizacje kompilatora (użyj CTRL lub SHIFT by wybrać więcej):</p>
+                {% csrf_token %}
+                {{ optimizations_form.as_p }}
+                <button type="submit">Zapisz optymalizacje</button>
+            </form>
+        </div>
+        <div class="cell-tab-data" id="tab3">
+            <form action={% url 'dir_browse:choose_processor' %} method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <p>Wybierz procesor:</p>
+                    {% for processor in processor_list %}
+                    {% if settings.processor == processor %}
+                    <input type="radio" name="processor" id="processor{{ forloop.counter }}" value="{{ processor.id }}"
+                        checked="checked">
+                    {%else %}
+                    <input type="radio" name="processor" id="processor{{ forloop.counter }}" value="{{ processor.id }}">
+                    {%endif%}
+                    <label for="processor{{ forloop.counter }}">{{ processor.name }}</label><br>
+                    {% endfor %}
+                </fieldset>
+                <input type="submit" value="Zapisz wybrany procesor">
+            </form>
+            <br>
+        </div>
+        <div class="cell-tab-data" id="tab4">
+            <form action={% url 'dir_browse:choose_dependant' %} method="post">
+                <p>Wybierz opcje zależne od procesora (użyj CTRL lub SHIFT by wybrać więcej):</p>
+                {% csrf_token %}
+                {{ dependant_form.as_p }}
+                <button type="submit">Zapisz opcje zależne</button>
+            </form>
+
+        </div>
+
+        <script type="text/javascript">
+            document.getElementById("defaultOpen").click();
+            function openTab(evt, tabId) {
+                var i, tabcontent, tablinks;
+
+                // Get all elements with class="cell-tab-data" and hide them
+                tabcontent = document.getElementsByClassName("cell-tab-data");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+
+                // Get all elements with class="tab" and remove the class "active"
+                tablinks = document.getElementsByClassName("tab");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+
+                // Show the current tab, and add an "active" class to the button that opened the tab
+                document.getElementById(tabId).style.display = "block";
+                evt.currentTarget.className += " active";
+            }
+
+        </script>
+        {% endblock %}
+
+    </div>
+</body>
+
+</html>

@@ -30,10 +30,10 @@
                 {% csrf_token %}
                 <div class="inner-cell-login">
                     <div class="login-label">{{ form.username.label_tag }}</div>
-                    <div>{{ form.username }}</div>
+                    <div class="login-field">{{ form.username }}</div>
 
                     <div class="login-label">{{ form.password.label_tag }}</div>
-                    <div>{{ form.password }}</div>
+                    <div class="login-field">{{ form.password }}</div>
                 </div>
 
                 <input type="submit" value="SIGN IN" class="login-button">

@@ -203,6 +203,10 @@ ul {
     background: linear-gradient(180deg, rgb(155, 200, 155), rgb(96, 185, 96));
 }
 
+.login-field input{
+    width: 91%;
+}
+
 /**************/
 /* Right panel */
 /**************/

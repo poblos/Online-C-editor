@@ -8,7 +8,9 @@
 <div class="cell-code">
     <form action={% url 'dir_browse:file_detail' pk %} id="formdata" method="post">
         {% csrf_token %}
+        <div class="code-area">
         {{form.as_p}}
+        </div>
         <input type="submit" value="Zapisz zmiany">
     </form>
     <form action={% url 'dir_browse:compile' pk %} method="post">
@@ -33,6 +35,32 @@
         })
     });
 
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/theme/oceanic-next.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/clike/clike.min.js"
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script type="text/javascript">
+    window.addEventListener('load', (event) => {
+        const target = document.getElementById("id_text");
+        const config = {
+            mode: 'text/x-csrc',
+            theme: 'oceanic-next',
+            lineNumbers: true,
+            lineWrapping: true
+        }
+
+        const jsonCodeMirror = CodeMirror.fromTextArea(target, config);
+        jsonCodeMirror.setSize("100%", 400);
+    });
 </script>
 {% endblock %}
 

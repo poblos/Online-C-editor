@@ -1,5 +1,5 @@
 :root {
-    
+   /* 
     --first-color: #f3ebd6;;
     --second-color: #e9e1cf;
     --top-cell-color: #d9d0bb;
@@ -11,10 +11,10 @@
     --text-color-darker: rgb(125, 134, 139);
     --text-color-darkest: rgb(178, 183, 187);
     --background-white:rgb(225, 230, 236);
-    
-/*
-    --first-color: #5c6165;
-    --second-color: #566169;
+    */
+
+    --first-color: #566169;
+    --second-color: #304148;
     --top-cell-color: #343a40;
     --top-cell-hover-color: #51575c;
     --tab-hover-color: #7f868b;
@@ -24,7 +24,7 @@
     --text-color-darker: rgb(213, 221, 226);
     --text-color-darkest: rgb(184, 191, 197);
     --background-white: rgb(225, 230, 236);
-*/
+
 }
 
 body {
@@ -130,6 +130,10 @@ ul {
     grid-column: 2/4;
     background-color: var(--second-color);
     resize: none;
+}
+
+.code-area {
+    text-align: left;
 }
 
 .cell-code::placeholder {

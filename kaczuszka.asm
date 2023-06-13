@@ -2,14 +2,13 @@
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 4.2.0 #13081 (MINGW64)
 ;--------------------------------------------------------
-	.module New_file
+	.module kaczuszka
 	.optsdcc -mmcs51 --model-small
 	
 ;--------------------------------------------------------
 ; Public variables in this module
 ;--------------------------------------------------------
 	.globl _main
-	.globl _printf
 ;--------------------------------------------------------
 ; special function registers
 ;--------------------------------------------------------
@@ -32,6 +31,7 @@
 ;--------------------------------------------------------
 ; overlayable items in internal ram
 ;--------------------------------------------------------
+	.area	OSEG    (OVR,DATA)
 ;--------------------------------------------------------
 ; Stack segment in internal ram
 ;--------------------------------------------------------
@@ -114,9 +114,10 @@ __sdcc_program_startup:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
 ;------------------------------------------------------------
-;a                         Allocated to registers 
+;x                         Allocated to registers 
+;y                         Allocated to registers 
 ;------------------------------------------------------------
-;	New file.c:5: a = 10;
+;	kaczuszka.c:11: }
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
@@ -129,31 +130,11 @@ _main:
 	ar2 = 0x02
 	ar1 = 0x01
 	ar0 = 0x00
-;	New file.c:11: ERROR: no line number 11 in file New file.c
-	mov	a,#0x0a
-	push	acc
-	clr	a
-	push	acc
-	mov	a,#___str_0
-	push	acc
-	mov	a,#(___str_0 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	mov	a,sp
-	add	a,#0xfb
-	mov	sp,a
-;	New file.c:13: ERROR: no line number 13 in file New file.c
+;	kaczuszka.c:19: ERROR: no line number 19 in file kaczuszka.c
 	mov	dptr,#0x0000
-;	New file.c:15: ERROR: no line number 15 in file New file.c
+;	kaczuszka.c:21: ERROR: no line number 21 in file kaczuszka.c
 	ret
 	.area CSEG    (CODE)
 	.area CONST   (CODE)
-	.area CONST   (CODE)
-___str_0:
-	.ascii "Kaczuszka %d"
-	.db 0x00
-	.area CSEG    (CODE)
 	.area XINIT   (CODE)
 	.area CABS    (ABS,CODE)

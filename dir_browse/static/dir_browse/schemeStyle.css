@@ -157,6 +157,53 @@ ul {
 }
 
 /**************/
+/* Login panel */
+/**************/
+.login-wrapper {
+    margin-top: 10%;
+    margin-left: 40%;
+    margin-right: 40%;
+    text-align: center;
+}
+
+.cell-login {
+    background-color: var(--second-color);
+    border-radius: 10px;
+}
+
+.inner-cell-login {
+    text-align: left;
+    margin-left: 20px;
+}
+
+.login-label {
+    margin-top: 20px;
+    font-family: Raleway-Regular;
+}
+
+.login-title {
+    padding-top: 15px;
+    font-size: 40px;
+    font-family: Raleway-Regular;
+}
+
+.login-button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    border-radius: 5px;
+    padding: 10px;
+    padding-left: 30%;
+    padding-right: 30%;
+    background: linear-gradient(180deg, rgb(110, 163, 110), rgb(68, 181, 68));
+    color:aliceblue;
+}
+
+.login-button:active {
+    background: linear-gradient(180deg, rgb(155, 200, 155), rgb(96, 185, 96));
+}
+
+/**************/
 /* Right panel */
 /**************/
 .cell-right {

@@ -1,12 +1,16 @@
-Autor: Szymon Pobłocki #438679
+Author: Szymon Pobłocki #438679
+An online C-editor that can use installed sdcc compiler.
+
+To run the Django development server, type python manage.py runserver in console.
+Database is populated with some sample data. Repository contains sample .asm and .c files.
 
 superuser:
 login: admin
 password: admin
 
-zwykły użytkownik:
+normal user:
 login: koczkodan
 password: ha1aba1a
 
-Stronę główną można znaleźć pod adresem
+The main page can be found under address
 http://localhost:8000/dir_browse/
